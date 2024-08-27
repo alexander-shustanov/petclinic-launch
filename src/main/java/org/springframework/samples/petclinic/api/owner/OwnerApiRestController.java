@@ -3,10 +3,10 @@ package org.springframework.samples.petclinic.api.owner;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.samples.petclinic.api.idencoder.EncodedId;
-import org.springframework.samples.petclinic.api.idencoder.IdEncoderApiRepository;
 import org.springframework.samples.petclinic.api.owner.dto.OwnerInfoDto;
-import org.springframework.samples.petclinic.api.owner.dto.OwnerKeyFieldDto;
+import org.springframework.samples.petclinic.api.owner.dto.OwnerKeyFieldsDto;
 import org.springframework.samples.petclinic.api.owner.dto.PetInfoDto;
+import org.springframework.samples.petclinic.api.idencoder.IdEncoderApiRepository;
 import org.springframework.samples.petclinic.api.owner.dto.VisitInfoDto;
 import org.springframework.samples.petclinic.api.owner.mapper.OwnerApiMapper;
 import org.springframework.samples.petclinic.api.owner.mapper.PetApiMapper;
@@ -19,7 +19,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/owners")
-public class OwnerApiController {
+public class OwnerApiRestController {
 
 	private final OwnerRepository ownerRepository;
 
@@ -35,13 +35,13 @@ public class OwnerApiController {
 
 	private final VisitApiMapper visitApiMapper;
 
-	public OwnerApiController(OwnerRepository ownerRepository,
-							  OwnerApiMapper ownerApiMapper,
-							  PetRepository petRepository,
-							  PetApiMapper petApiMapper,
-							  IdEncoderApiRepository idEncoderApiRepository,
-							  VisitRepository visitRepository,
-							  VisitApiMapper visitApiMapper) {
+	public OwnerApiRestController(OwnerRepository ownerRepository,
+								  OwnerApiMapper ownerApiMapper,
+								  PetRepository petRepository,
+								  PetApiMapper petApiMapper,
+								  IdEncoderApiRepository idEncoderApiRepository,
+								  VisitRepository visitRepository,
+								  VisitApiMapper visitApiMapper) {
 		this.ownerRepository = ownerRepository;
 		this.ownerApiMapper = ownerApiMapper;
 		this.petRepository = petRepository;
@@ -51,40 +51,33 @@ public class OwnerApiController {
 		this.visitApiMapper = visitApiMapper;
 	}
 
-	@PostMapping("/by-key-fields")
-	public List<OwnerInfoDto> findByTelephoneIn(@RequestBody List<OwnerKeyFieldDto> keyFieldDtos) {
+	@PostMapping(path = {"/by-key-fields"})
+	public List<OwnerInfoDto> findByTelephoneIn(@RequestBody List<OwnerKeyFieldsDto> ownerKeyFieldsDtos) {
+		List<String> telephones = ownerKeyFieldsDtos.stream().map(OwnerKeyFieldsDto::telephone).toList();
 
-		if (keyFieldDtos.size() > 100) {
-			throw new IllegalArgumentException("Too many entities");
-		}
+		var ownerKeyFieldsDtoSet = new HashSet<>(ownerKeyFieldsDtos);
 
-		List<String> telephones = keyFieldDtos.stream().map(OwnerKeyFieldDto::telephone).toList();
-
-		HashSet<OwnerKeyFieldDto> ownerKeyFieldDtosSet = new HashSet<>(keyFieldDtos);
 		List<Owner> owners = ownerRepository.findByTelephoneIn(telephones).stream()
-			.filter(o -> ownerKeyFieldDtosSet.contains(ownerApiMapper.toOwnerKeyFieldDto(o)))
+			.filter(o -> ownerKeyFieldsDtoSet.contains(ownerApiMapper.toOwnerKeyFieldsDto(o)))
 			.toList();
 
-		return owners.stream()
-			.map(ownerApiMapper::toOwnerInfoDto)
-			.toList();
+		return owners.stream().map(ownerApiMapper::toOwnerInfoDto).toList();
 	}
 
-	@GetMapping("/{ownerId}/pets")
-	public Slice<PetInfoDto> findByOwner_Id(@EncodedId(encoder = "owner") Integer ownerId,
-											Pageable pageable) {
 
-		Slice<Pet> pets = petRepository.findByOwner_Id(ownerId, pageable);
+	@GetMapping("/{ownerId}/pets")
+	public Slice<PetInfoDto> findAllByOwner_Id(@EncodedId(encoder = "owner") Integer ownerId,
+											  Pageable pageable) {
+
+		Slice<Pet> pets = petRepository.findAllByOwner_Id(ownerId, pageable);
 
 		return pets.map(petApiMapper::toPetInfoDto);
 	}
 
-	@GetMapping("/{ownerId}/pets/{petId}/visits")
-	public Slice<VisitInfoDto> findAllByPet_Id(@EncodedId(encoder = "pet") Integer petId,
-											   Pageable pageable) {
+	@GetMapping("/{ownerId}/pets/{petId}")
+	public Slice<VisitInfoDto> findAllByPet_Id(@EncodedId(encoder = "pet") Integer petId, Pageable pageable) {
 		Slice<Visit> visits = visitRepository.findAllByPet_Id(petId, pageable);
-
-		return visits.map(visitApiMapper::toDto);
+		return visits.map(visitApiMapper::toVisitInfoDto);
 	}
 }
 

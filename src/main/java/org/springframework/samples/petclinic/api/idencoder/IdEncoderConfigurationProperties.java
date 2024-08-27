@@ -18,7 +18,9 @@ public class IdEncoderConfigurationProperties {
 	}
 
 	public static class IdEncoder {
+
 		private String alphabet;
+
 		private Integer minLength;
 
 		public String getAlphabet() {

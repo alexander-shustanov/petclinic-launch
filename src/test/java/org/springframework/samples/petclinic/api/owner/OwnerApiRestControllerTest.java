@@ -10,18 +10,21 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.test.web.servlet.MockMvc;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
- * Test class for the {@link OwnerApiController}
+ * Test class for the {@link OwnerApiRestController}
  */
 @SpringBootTest
 @WithMockUser
 @AutoConfigureMockMvc
-public class OwnerApiControllerTest {
+public class OwnerApiRestControllerTest {
 
 	@Autowired
 	private MockMvc mockMvc;
@@ -33,38 +36,37 @@ public class OwnerApiControllerTest {
 
 	@Test
 	public void findByTelephoneIn() throws Exception {
-		String keyFieldDtos = """
+		String ownerKeyFieldsDtos = """
 
 			[
                     {
-                        "firstName": "George",
-                        "lastName": "Franklin",
-                        "telephone": "6085551023"
+                        "firstName": "Jean",
+                        "lastName": "Coleman",
+                        "telephone": "6085552654"
                     }
                 ]""";
 
         mockMvc.perform(post("/api/owners/by-key-fields")
-				.with(SecurityMockMvcRequestPostProcessors.csrf())
-				.content(keyFieldDtos)
-				.contentType(MediaType.APPLICATION_JSON))
+                        .content(ownerKeyFieldsDtos)
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andDo(print());
-	}
+}
 
 	@Test
-	public void findByOwner_Id() throws Exception {
-		mockMvc.perform(get("/api/owners/{0}/pets", "CGH5QKD1IY")
-				.with(SecurityMockMvcRequestPostProcessors.csrf()))
+	public void findAllByOwner_Id() throws Exception {
+		mockMvc.perform(get("/api/owners/{0}/pets", "J1EMrQSP6i")
+				.param("pageNumber", "0")
+				.param("pageSize", "10"))
 			.andExpect(status().isOk())
 			.andDo(print());
 	}
 
 	@Test
 	public void findAllByPet_Id() throws Exception {
-		mockMvc.perform(get("/api/owners/{0}/pets/{1}/visits", "CGH5QKD1IY", "WrqV4LHUrm")
+		mockMvc.perform(get("/api/owners/{0}/pets/{1}", "J1EMrQSP6i", "GhR1HdJOCu")
 				.param("pageNumber", "0")
-				.param("pageSize", "10")
-				.with(SecurityMockMvcRequestPostProcessors.csrf()))
+				.param("pageSize", "10"))
 			.andExpect(status().isOk())
 			.andDo(print());
 	}

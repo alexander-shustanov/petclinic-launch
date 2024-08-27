@@ -37,7 +37,53 @@ services:
       start_period: 10s
       retries: 5
     entrypoint: /bin/sh -c "chmod 600 /pgadmin4/pgpass; /entrypoint.sh;"
+
+  kc-postgres:
+    image: postgres:16.4
+    restart: "no"
+    ports:
+      - "5433:5432"
+    volumes:
+      - kc-postgres_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres_secret
+      POSTGRES_DB: mydb
+    healthcheck:
+      test: pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB
+      interval: 10s
+      timeout: 5s
+      start_period: 10s
+      retries: 5
+  keycloak:
+    image: quay.io/keycloak/keycloak:25.0.4
+    restart: "no"
+    command:
+      - "start-dev"
+    ports:
+      - "9081:9081"
+    environment:
+      KC_HTTP_PORT: 9081
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_DB: postgres
+      KC_DB_URL_HOST: kc-postgres
+      KC_DB_URL_PORT: 5432
+      KC_DB_URL_DATABASE: mydb
+      KC_DB_USERNAME: postgres
+      KC_DB_PASSWORD: postgres_secret
+      KC_HEALTH_ENABLED: "true"
+    healthcheck:
+      test:
+        [ "CMD-SHELL", "{ exec 3<>/dev/tcp/localhost/9081 && echo -e \"GET /health/ready HTTP/1.1\nhost: localhost:9081\n\" >&3 && timeout --preserve-status 1 cat <&3 | grep -m 1 -q 'status.*UP'; }" ]
+      interval: 10s
+      timeout: 5s
+      start_period: 60s
+      retries: 5
+    depends_on:
+      - kc-postgres
 volumes:
   postgres_data:
   pgadmin_data:
+  kc-postgres_data:
 

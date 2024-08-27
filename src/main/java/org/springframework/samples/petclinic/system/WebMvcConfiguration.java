@@ -3,14 +3,15 @@ package org.springframework.samples.petclinic.system;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.samples.petclinic.api.idencoder.EncodedIdMethodArgumentResolver;
 import org.springframework.samples.petclinic.api.idencoder.IdEncoderApiRepository;
+import org.springframework.stereotype.Component;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import java.util.List;
 
-@EnableWebMvc
 @Configuration
+@EnableWebMvc
 public class WebMvcConfiguration implements WebMvcConfigurer {
 
 	private final IdEncoderApiRepository idEncoderApiRepository;

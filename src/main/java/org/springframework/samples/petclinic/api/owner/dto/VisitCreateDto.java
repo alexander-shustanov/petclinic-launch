@@ -7,5 +7,6 @@ import java.time.LocalDate;
 /**
  * DTO for {@link org.springframework.samples.petclinic.owner.Visit}
  */
-public record VisitInfoDto(String id, LocalDate date, @NotBlank String description) {
+public record VisitCreateDto(LocalDate date, @NotBlank String description,
+							 String petId, String petOwnerId) {
 }
