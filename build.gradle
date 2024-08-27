@@ -54,6 +54,11 @@ dependencies {
     implementation 'org.flywaydb:flyway-mysql'
     implementation 'org.flywaydb:flyway-core'
   implementation 'org.flywaydb:flyway-database-postgresql'
+  compileOnly 'org.mapstruct:mapstruct:1.5.3.Final'
+  annotationProcessor 'org.mapstruct:mapstruct-processor:1.5.3.Final'
+  implementation 'org.sqids:sqids:0.1.0'
+  implementation 'org.springframework.boot:spring-boot-starter-security'
+  testImplementation 'org.springframework.security:spring-security-test'
 }
 
 tasks.named('test') {
