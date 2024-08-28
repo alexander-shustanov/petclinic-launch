@@ -87,10 +87,10 @@ public class WebSecurityConfiguration {
 		return http.build();
 	}
 
-//	@Bean
-//	@Order(20)
+	@Bean
+	@Order(20)
 	public SecurityFilterChain adminui(HttpSecurity http) throws Exception {
-		http.securityMatcher("/adminui/*");
+		http.securityMatcher("/adminui/**");
 		http.authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests
 			.anyRequest().authenticated());
 		http.headers(Customizer.withDefaults());
